@@ -1,3 +1,4 @@
+import 'reflect-metadata'; // Must be the absolute first import
 import { registerRootComponent } from 'expo';
 
 import App from './App';
