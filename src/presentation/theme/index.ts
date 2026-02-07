@@ -60,8 +60,8 @@ export const typography = {
   fonts: {
     display: 'SpaceGrotesk_700Bold',     // For headings, bold statements
     heading: 'SpaceGrotesk_600SemiBold',  // For section titles
-    body: 'Inter_400Regular',             // For body text
-    mono: 'JetBrainsMono_400Regular',     // For time codes, technical info
+    body: 'SpaceGrotesk_400Regular',             // For body text
+    mono: 'SpaceGrotesk_400Bold',     // For time codes, technical info
   },
   
   // Type scale

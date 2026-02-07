@@ -31,9 +31,11 @@ export const map = <T, U, E>(
   fn: (data: T) => U
 ): Result<U, E> => {
   if (result.success) {
-    return success(fn(result.data));
+    return success(fn(result.data)) as Result<U, E>;
   }
-  return result;
+  // Cast to Result<U, E> to ensure E is correctly mapped 
+  // even though the data type (U) doesn't matter for a failure
+  return result as Result<U, E>;
 };
 
 // MapError: Transform the error inside a failed Result
@@ -102,14 +104,16 @@ export const combine = <T extends readonly unknown[], E>(
 ): Result<T, E> => {
   const values: unknown[] = [];
   
-  for (const result of results) {
+  // Cast 'results' to any or Result<any, E>[] if the iterator loses type safety
+  for (const result of (results as unknown as Result<any, E>[])) {
     if (!result.success) {
-      return result;
+      // Explicitly return the failure as the expected Result type
+      return result as Result<T, E>;
     }
     values.push(result.data);
   }
   
-  return success(values as unknown as T);
+  return success(values as unknown as T) as Result<T, E>;
 };
 
 // Async helpers

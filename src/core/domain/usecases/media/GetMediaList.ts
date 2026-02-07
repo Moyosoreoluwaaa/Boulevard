@@ -3,8 +3,8 @@
 
 import { injectable, inject } from 'tsyringe';
 import { Media, MediaFilter, MediaType } from '../entities/Media';
-import { IMediaRepository } from '../repositories/IMediaRepository';
-import { Result, success, failure } from '../../utils/Result';
+import { IMediaRepository } from '../../repositories/IMediaRepository';
+import { Result, success, failure } from '../../../utils/Result';
 
 export interface GetMediaListParams {
   filter?: MediaFilter;
@@ -75,8 +75,8 @@ export class GetMediaList {
         const query = filter.searchQuery.toLowerCase();
         filtered = filtered.filter(m =>
           m.title.toLowerCase().includes(query) ||
-          ('artist' in m && m.artist?.toLowerCase().includes(query)) ||
-          ('album' in m && m.album?.toLowerCase().includes(query))
+          ('artist' in m && typeof m.artist === 'string' && m.artist.toLowerCase().includes(query)) ||
+          ('album' in m && typeof m.album === 'string' && m.album.toLowerCase().includes(query))
         );
       }
 
@@ -95,8 +95,8 @@ export class GetMediaList {
             return (a.size - b.size) * order;
           case 'artist':
             if ('artist' in a && 'artist' in b) {
-              const artistA = a.artist || '';
-              const artistB = b.artist || '';
+              const artistA = typeof a.artist === 'string' ? a.artist : '';
+              const artistB = typeof b.artist === 'string' ? b.artist : '';
               return artistA.localeCompare(artistB) * order;
             }
             return 0;
