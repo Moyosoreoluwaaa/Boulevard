@@ -1,1 +1,141 @@
-﻿
+// Core Domain Layer - Repository Interfaces (Contracts)
+// These define WHAT we need, not HOW to implement it
+
+import {
+  Media,
+  AudioTrack,
+  VideoFile,
+  Playlist,
+  MediaFilter,
+  MediaType,
+} from '../entities/Media';
+import { Result } from '../../utils/Result';
+
+export interface IMediaRepository {
+  // Query operations
+  getAll(): Promise<Result<Media[]>>;
+  getById(id: string): Promise<Result<Media | null>>;
+  getByType(type: MediaType): Promise<Result<Media[]>>;
+  search(query: string): Promise<Result<Media[]>>;
+  filter(filter: MediaFilter): Promise<Result<Media[]>>;
+  
+  // Reactive operations (for real-time updates)
+  observeAll(): AsyncIterable<Result<Media[]>>;
+  observeById(id: string): AsyncIterable<Result<Media | null>>;
+  
+  // Mutation operations
+  save(media: Media): Promise<Result<void>>;
+  saveMany(media: Media[]): Promise<Result<void>>;
+  update(id: string, updates: Partial<Media>): Promise<Result<void>>;
+  delete(id: string): Promise<Result<void>>;
+  deleteMany(ids: string[]): Promise<Result<void>>;
+  
+  // Favorites
+  toggleFavorite(id: string): Promise<Result<void>>;
+  getFavorites(): Promise<Result<Media[]>>;
+  
+  // Recently played
+  getRecentlyPlayed(limit?: number): Promise<Result<Media[]>>;
+  markAsPlayed(id: string): Promise<Result<void>>;
+}
+
+export interface IPlaylistRepository {
+  // Query operations
+  getAll(): Promise<Result<Playlist[]>>;
+  getById(id: string): Promise<Result<Playlist | null>>;
+  getSystemPlaylists(): Promise<Result<Playlist[]>>;
+  getUserPlaylists(): Promise<Result<Playlist[]>>;
+  
+  // Reactive operations
+  observeAll(): AsyncIterable<Result<Playlist[]>>;
+  observeById(id: string): AsyncIterable<Result<Playlist | null>>;
+  
+  // Mutation operations
+  create(playlist: Omit<Playlist, 'id' | 'createdAt' | 'updatedAt'>): Promise<Result<Playlist>>;
+  update(id: string, updates: Partial<Playlist>): Promise<Result<void>>;
+  delete(id: string): Promise<Result<void>>;
+  
+  // Media management within playlist
+  addMedia(playlistId: string, mediaId: string): Promise<Result<void>>;
+  addMediaBulk(playlistId: string, mediaIds: string[]): Promise<Result<void>>;
+  removeMedia(playlistId: string, mediaId: string): Promise<Result<void>>;
+  reorderMedia(playlistId: string, fromIndex: number, toIndex: number): Promise<Result<void>>;
+  
+  // Playlist utilities
+  getMediaInPlaylist(playlistId: string): Promise<Result<Media[]>>;
+}
+
+export interface IStorageRepository {
+  // File operations
+  saveFile(uri: string, destination: string): Promise<Result<string>>;
+  deleteFile(uri: string): Promise<Result<void>>;
+  fileExists(uri: string): Promise<Result<boolean>>;
+  getFileInfo(uri: string): Promise<Result<FileInfo>>;
+  
+  // Directory operations
+  scanDirectory(path: string): Promise<Result<string[]>>;
+  createDirectory(path: string): Promise<Result<void>>;
+  deleteDirectory(path: string): Promise<Result<void>>;
+  
+  // Thumbnail operations
+  saveThumbnail(mediaUri: string, thumbnailData: string): Promise<Result<string>>;
+  getThumbnail(mediaId: string): Promise<Result<string | null>>;
+}
+
+export interface IPlaybackRepository {
+  // Playback state
+  getCurrentState(): Promise<Result<PlaybackState>>;
+  saveState(state: PlaybackState): Promise<Result<void>>;
+  clearState(): Promise<Result<void>>;
+  
+  // Playback history
+  getPlaybackHistory(limit?: number): Promise<Result<PlaybackHistoryEntry[]>>;
+  addToHistory(mediaId: string, timestamp: Date): Promise<Result<void>>;
+  clearHistory(): Promise<Result<void>>;
+}
+
+export interface ISettingsRepository {
+  // General settings
+  get<T>(key: string, defaultValue: T): Promise<Result<T>>;
+  set<T>(key: string, value: T): Promise<Result<void>>;
+  remove(key: string): Promise<Result<void>>;
+  clear(): Promise<Result<void>>;
+  
+  // Typed getters/setters for common settings
+  getTheme(): Promise<Result<'light' | 'dark' | 'auto'>>;
+  setTheme(theme: 'light' | 'dark' | 'auto'): Promise<Result<void>>;
+  
+  getPlaybackQuality(): Promise<Result<'low' | 'medium' | 'high'>>;
+  setPlaybackQuality(quality: 'low' | 'medium' | 'high'): Promise<Result<void>>;
+}
+
+// Supporting types
+export interface FileInfo {
+  uri: string;
+  size: number;
+  mimeType: string;
+  name: string;
+  extension: string;
+  createdAt: Date;
+  modifiedAt: Date;
+}
+
+export interface PlaybackState {
+  mediaId: string | null;
+  isPlaying: boolean;
+  position: number;
+  duration: number;
+  volume: number;
+  isMuted: boolean;
+  playbackRate: number;
+  repeat: 'off' | 'one' | 'all';
+  shuffle: boolean;
+}
+
+export interface PlaybackHistoryEntry {
+  id: string;
+  mediaId: string;
+  playedAt: Date;
+  duration: number;
+  completionPercentage: number; // 0-100
+}
