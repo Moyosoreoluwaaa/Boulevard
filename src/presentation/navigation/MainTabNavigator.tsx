@@ -3,19 +3,31 @@
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { View, StyleSheet, Platform } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withSpring,
-  interpolate,
 } from 'react-native-reanimated';
 import { theme } from '@presentation/theme';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { LibraryScreen } from '../screens/library/LibraryScreen';
 import { PlayerScreen } from '../screens/player/PlayerScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { VideoPlayerScreen } from '../screens/player/VideoPlayerScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Stack Navigator for Library (to include VideoPlayer)
+const LibraryStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="LibraryMain" component={LibraryScreen} />
+      <Stack.Screen name="VideoPlayer" component={VideoPlayerScreen} />
+    </Stack.Navigator>
+  );
+};
 
 // Custom Tab Bar Icons
 const TabIcon: React.FC<{
@@ -81,7 +93,7 @@ export const MainTabNavigator = () => {
       
       <Tab.Screen
         name="Library"
-        component={LibraryScreen}
+        component={LibraryStack}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} icon="📁" label="Library" />
